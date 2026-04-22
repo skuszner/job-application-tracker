@@ -36,9 +36,11 @@ export async function signup(req: Request, res: Response) {
       "code" in err &&
       err.code === "P2002"
     ) {
-      res.status(409).json({ error: "Email already exists" });
+      res
+        .status(409)
+        .json({ error: "An account with that email already exists." });
     } else {
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ error: "Internal server error." });
     }
   }
 }
@@ -47,7 +49,7 @@ export async function login(req: Request, res: Response) {
   const { email, password } = req.body;
 
   const unauthorizedResponse = () => {
-    return res.status(401).json({ error: "Invalid email or password" });
+    return res.status(401).json({ error: "Invalid email or password." });
   };
 
   const user = await prisma.user.findUnique({
