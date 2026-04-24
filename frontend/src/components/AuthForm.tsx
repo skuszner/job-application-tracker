@@ -13,10 +13,10 @@ import { MdErrorOutline } from "react-icons/md";
 export type AuthFormField = {
   label: string;
   name: string;
-  type: "email" | "password" | "text";
+  type: React.HTMLInputTypeAttribute;
   placeholder: string;
   value: string;
-  setValue: (value: string) => void;
+  setValue: React.Dispatch<React.SetStateAction<string>>;
 };
 
 type AuthFormProps = {
@@ -25,7 +25,7 @@ type AuthFormProps = {
   submitLabel: string;
   loading: boolean;
   error: string | null;
-  setError: (value: string | null) => void;
+  setError: React.Dispatch<React.SetStateAction<string | null>>;
   footerPrompt: string;
   footerLinkLabel: string;
   footerLinkHref: string;
