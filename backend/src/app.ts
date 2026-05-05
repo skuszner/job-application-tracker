@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 import authRoutes from "./routes/auth.ts";
+import jobsRoutes from "./routes/jobs.ts";
 
 dotenv.config();
 
@@ -16,5 +17,6 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/auth", authRoutes);
+app.use("/jobs", jobsRoutes);
 
 export default app;

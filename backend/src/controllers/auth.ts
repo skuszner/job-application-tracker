@@ -2,13 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { prisma } from "../prisma/client.ts";
 import type { Request, Response } from "express";
-
-interface AuthenticatedRequest extends Request {
-  user: {
-    id: string;
-    email: string;
-  };
-}
+import type { AuthenticatedRequest } from "../types.ts";
 
 export async function signup(req: Request, res: Response) {
   const { email, password } = req.body;
