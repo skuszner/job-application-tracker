@@ -58,5 +58,5 @@ export function useAuth() {
     login,
     signup,
     logout
-  };
+  } as const;
 }
