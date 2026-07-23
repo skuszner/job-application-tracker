@@ -1,6 +1,5 @@
 import { Box, Chip, Sheet, Typography } from "@mui/joy";
-import type { Job } from "../hooks/useJobs";
-import type { MouseEventHandler } from "react";
+import type { Job } from "../types/job";
 
 interface JobCardProps {
   job: Job;
@@ -32,9 +31,7 @@ export default function JobCard({
         alignItems: { xs: "flex-start", sm: "center" },
         cursor: onClick ? "pointer" : "default"
       }}
-      onClick={
-        onClick ? ((() => onClick(job)) as MouseEventHandler) : undefined
-      }
+      onClick={onClick ? () => onClick(job) : undefined}
     >
       <Box>
         <Typography level="title-md">{job.role}</Typography>

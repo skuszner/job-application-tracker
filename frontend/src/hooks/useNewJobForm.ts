@@ -1,48 +1,28 @@
 import { useState } from "react";
 import { type Job } from "./useJobs";
 import {
+  createInitialJobFormValues,
+  normalizeJobFormValues,
+  validateJobFormValues,
   type JobFormErrors,
   type JobFormValues
-} from "../components/JobFormFields";
+} from "../utils/jobForm";
 
 type CreateJobPayload = Omit<Job, "id" | "createdAt">;
-
-function createInitialJob(): JobFormValues {
-  return {
-    company: "",
-    role: "",
-    status: "APPLIED",
-    appliedDate: new Date().toISOString().slice(0, 10),
-    notes: ""
-  };
-}
-
-function validateJob(values: JobFormValues): JobFormErrors {
-  const errors: JobFormErrors = {};
-
-  if (!values.company.trim()) errors.company = "Company is required.";
-  if (!values.role.trim()) errors.role = "Role is required.";
-  if (
-    !values.appliedDate ||
-    Number.isNaN(new Date(values.appliedDate).getTime())
-  ) {
-    errors.appliedDate = "Use a valid application date.";
-  }
-
-  return errors;
-}
 
 export function useNewJobForm(
   createJob: (payload: CreateJobPayload) => Promise<Job>,
   onSuccess?: () => void
 ) {
-  const [newJob, setNewJob] = useState<JobFormValues>(createInitialJob);
+  const [newJob, setNewJob] = useState<JobFormValues>(
+    createInitialJobFormValues
+  );
   const [newJobErrors, setNewJobErrors] = useState<JobFormErrors>({});
   const [creatingJob, setCreatingJob] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
 
   const resetNewJob = () => {
-    setNewJob(createInitialJob());
+    setNewJob(createInitialJobFormValues());
     setNewJobErrors({});
     setAddError(null);
   };
@@ -51,12 +31,12 @@ export function useNewJobForm(
     key: K,
     value: JobFormValues[K]
   ) => {
-    setNewJob((previous) => ({ ...previous, [key]: value }));
-    setNewJobErrors((previous) => ({ ...previous, [key]: undefined }));
+    setNewJob((prev) => ({ ...prev, [key]: value }));
+    setNewJobErrors((prev) => ({ ...prev, [key]: undefined }));
   };
 
   const handleCreateJob = async () => {
-    const validationErrors = validateJob(newJob);
+    const validationErrors = validateJobFormValues(newJob);
     if (Object.keys(validationErrors).length > 0) {
       setNewJobErrors(validationErrors);
       return false;
@@ -66,13 +46,7 @@ export function useNewJobForm(
     setAddError(null);
 
     try {
-      await createJob({
-        company: newJob.company.trim(),
-        role: newJob.role.trim(),
-        status: newJob.status,
-        appliedDate: newJob.appliedDate,
-        notes: newJob.notes.trim() ? newJob.notes.trim() : null
-      });
+      await createJob(normalizeJobFormValues(newJob));
 
       resetNewJob();
       onSuccess?.();

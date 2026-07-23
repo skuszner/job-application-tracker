@@ -8,22 +8,8 @@ import {
   Textarea,
   Typography
 } from "@mui/joy";
-
-export type JobStatus = "APPLIED" | "INTERVIEW" | "OFFER" | "REJECTED";
-
-export type JobFormValues = {
-  company: string;
-  role: string;
-  status: JobStatus;
-  appliedDate: string;
-  notes: string;
-};
-
-export type JobFormErrors = {
-  company?: string;
-  role?: string;
-  appliedDate?: string;
-};
+import { type JobFormErrors, type JobFormValues } from "../types/jobForm";
+import { type JobStatus } from "../types/job";
 
 interface JobFormFieldsProps {
   values: JobFormValues;

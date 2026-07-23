@@ -20,6 +20,8 @@ interface JobDialogProps {
   submitLabel: string;
   onSubmit: () => void;
   submitting?: boolean;
+  onDelete?: () => void;
+  deleteLabel?: string;
   submitColor?: "primary" | "neutral" | "danger";
   submitVariant?: "solid" | "outlined" | "soft";
   width?: string;
@@ -36,6 +38,8 @@ export default function JobDialog({
   submitLabel,
   onSubmit,
   submitting = false,
+  onDelete,
+  deleteLabel,
   submitColor = "primary",
   submitVariant = "solid",
   width = "min(560px, 92vw)"
@@ -70,6 +74,11 @@ export default function JobDialog({
           justifyContent="flex-end"
           sx={{ mt: 2 }}
         >
+          {onDelete && (
+            <Button color="danger" variant="outlined" onClick={onDelete}>
+              {deleteLabel ?? "Delete"}
+            </Button>
+          )}
           <Button
             color="neutral"
             variant="outlined"

@@ -1,6 +1,6 @@
 import { Sheet, Stack, Typography } from "@mui/joy";
 import JobCard from "./JobCard";
-import type { Job } from "../hooks/useJobs";
+import type { Job } from "../types/job";
 
 interface JobListProps {
   jobs: Job[];

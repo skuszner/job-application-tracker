@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { type Job } from "./useJobs";
-import { type JobStatus } from "../components/JobFormFields";
+import { type JobStatus } from "../types/job";
 
 type StatusFilter = "ALL" | JobStatus;
 
@@ -38,7 +38,7 @@ export function useFilters(jobs: Job[]) {
     searchTerm,
     setSearchTerm,
     statusFilter,
-    setStatusFilter: (s: StatusFilter) => setStatusFilter(s),
+    setStatusFilter,
     filteredJobs,
     hasFilters,
     handleClearFilters

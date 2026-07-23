@@ -1,6 +1,6 @@
 import { Button, Input, Option, Select, Stack, Typography } from "@mui/joy";
 import { MdSearch } from "react-icons/md";
-import type { JobStatus } from "../hooks/useJobs";
+import type { JobStatus } from "../types/job";
 
 interface FiltersBarProps {
   searchTerm: string;

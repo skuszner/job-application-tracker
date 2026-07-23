@@ -1,44 +1,29 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { Box, Grid, Sheet, Stack, Typography } from "@mui/joy";
+
 import { useAuth } from "../hooks/useAuth";
 import { useFilters } from "../hooks/useFilters";
 import { usePagination } from "../hooks/usePagination";
-import { useNewJobForm } from "../hooks/useNewJobForm.ts";
+import { useNewJobForm } from "../hooks/useNewJobForm";
+import { useEditJobForm } from "../hooks/useEditJobForm";
+import { useJobs } from "../hooks/useJobs";
+
 import JobDialog from "../components/JobDialog";
-import JobFormFields, { type JobStatus } from "../components/JobFormFields.tsx";
+import JobFormFields from "../components/JobFormFields";
 import Pagination from "../components/Pagination";
-import useJobs, { type Job } from "../hooks/useJobs";
 import FiltersBar from "../components/FiltersBar";
 import JobList from "../components/JobList";
 import TopToolbar from "../components/TopToolbar";
 import StatsCard from "../components/StatsCard";
+import ConfirmDialog from "../components/ConfirmDialog";
 
-type StatusFilter = "ALL" | JobStatus;
-
-const statusOptions: JobStatus[] = [
-  "APPLIED",
-  "INTERVIEW",
-  "OFFER",
-  "REJECTED"
-];
-
-const statusLabels: Record<JobStatus, string> = {
-  APPLIED: "Applied",
-  INTERVIEW: "Interview",
-  OFFER: "Offer",
-  REJECTED: "Rejected"
-};
-
-const statusColors: Record<
-  JobStatus,
-  "neutral" | "primary" | "success" | "danger"
-> = {
-  APPLIED: "primary",
-  INTERVIEW: "neutral",
-  OFFER: "success",
-  REJECTED: "danger"
-};
+import {
+  jobStatusColors,
+  jobStatusLabels,
+  jobStatusOptions
+} from "../constants/jobStatus";
+import { buildJobStats } from "../utils/jobStats";
 
 const jobsPerPage = 6;
 
@@ -46,7 +31,8 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  const { jobs, loading, error, loadJobs, createJob } = useJobs();
+  const { jobs, loading, error, loadJobs, createJob, updateJob, deleteJob } =
+    useJobs();
   const {
     searchTerm,
     setSearchTerm,
@@ -77,21 +63,55 @@ export default function Dashboard() {
     setPage(1);
   });
 
+  const {
+    editingJob,
+    formValues: editValues,
+    errors: editErrors,
+    updating,
+    updateError,
+    startEditing,
+    resetEditing,
+    handleChange: handleEditChange,
+    handleUpdate
+  } = useEditJobForm(updateJob, () => setPage(1));
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const closeDeleteDialog = () => {
+    setConfirmOpen(false);
+    setDeletingId(null);
+    setDeleting(false);
+  };
+
+  const handleDeleteClick = () => {
+    if (!editingJob) return;
+    setDeletingId(editingJob.id);
+    setDeleting(false);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingId || deleting) return;
+    setDeleting(true);
+
+    try {
+      await deleteJob(deletingId);
+      resetEditing();
+      setPage(1);
+    } catch {
+      // silently ignore API errors in this flow
+    } finally {
+      closeDeleteDialog();
+    }
+  };
+
   useEffect(() => {
     setPage(1);
   }, [searchTerm, statusFilter, setPage]);
 
-  const interviewCount = jobs.filter(
-    (job) => job.status === "INTERVIEW"
-  ).length;
-  const offerCount = jobs.filter((job) => job.status === "OFFER").length;
-  const activeCount = jobs.filter((job) => job.status !== "REJECTED").length;
-  const stats = [
-    { label: "Total applications", value: jobs.length },
-    { label: "Active applications", value: activeCount },
-    { label: "Interviews", value: interviewCount },
-    { label: "Offers", value: offerCount }
-  ];
+  const stats = useMemo(() => buildJobStats(jobs), [jobs]);
 
   const handleLogout = () => {
     logout();
@@ -146,19 +166,19 @@ export default function Dashboard() {
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           statusFilter={statusFilter}
-          onStatusChange={(v) => setStatusFilter(v as StatusFilter)}
+          onStatusChange={setStatusFilter}
           hasFilters={hasFilters}
           onClear={handleClearFilters}
-          statusOptions={statusOptions}
-          statusLabels={statusLabels}
+          statusOptions={jobStatusOptions}
+          statusLabels={jobStatusLabels}
           resultsCount={filteredJobs.length}
         />
 
         <JobList
-          jobs={visibleJobs as Job[]}
-          onJobClick={() => {}}
-          statusLabels={statusLabels}
-          statusColors={statusColors}
+          jobs={visibleJobs}
+          onJobClick={(job) => startEditing(job)}
+          statusLabels={jobStatusLabels}
+          statusColors={jobStatusColors}
           loading={loading}
           error={error}
         />
@@ -203,10 +223,44 @@ export default function Dashboard() {
           values={newJob}
           errors={newJobErrors}
           onChange={handleNewJobChange}
-          statusOptions={statusOptions}
-          statusLabels={statusLabels}
+          statusOptions={jobStatusOptions}
+          statusLabels={jobStatusLabels}
         />
       </JobDialog>
+
+      <JobDialog
+        open={Boolean(editingJob)}
+        onClose={() => resetEditing()}
+        title="Edit job application"
+        description="Update the details of your job application."
+        error={updateError}
+        submitLabel="Save changes"
+        onSubmit={() => void handleUpdate()}
+        submitting={updating}
+        onDelete={handleDeleteClick}
+        deleteLabel="Delete application"
+      >
+        {editValues && (
+          <JobFormFields
+            values={editValues}
+            errors={editErrors}
+            onChange={handleEditChange}
+            statusOptions={jobStatusOptions}
+            statusLabels={jobStatusLabels}
+          />
+        )}
+      </JobDialog>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onClose={closeDeleteDialog}
+        title="Delete application"
+        message="Are you sure you want to delete this application? This action can not be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onConfirm={handleConfirmDelete}
+        loading={deleting}
+      />
     </Box>
   );
 }
