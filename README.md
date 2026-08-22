@@ -26,8 +26,7 @@ A full-stack web application that helps users track job applications, statuses, 
 
 **Deployment**
 
-- TBD (Frontend)
-- TBD (Backend)
+- Render
 
 ## Features
 
@@ -59,5 +58,5 @@ A full-stack web application that helps users track job applications, statuses, 
 
 ## Live Demo
 
-- Frontend:
-- Backend API:
+- Frontend: https://job-application-tracker-iree.onrender.com
+- Backend API: https://job-application-tracker-backend-ju54.onrender.com
