@@ -22,6 +22,7 @@ A full-stack web application that helps users track job applications, statuses, 
 
 - Node.js
 - Supertest
+- Vitest
 
 **Deployment**
 
